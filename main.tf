@@ -96,13 +96,13 @@ resource "azurerm_network_security_group" "nsg" {
 
   
   security_rule {
-    name                       = "Jenkins5000"
+    name                       = "Jenkins50000"
     priority                   = 1004
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
-    destination_port_range     = "5000"
+    destination_port_range     = "50000"
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
