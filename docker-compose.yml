@@ -1,6 +1,7 @@
 services:
   jenkins:
     build: .
+    network_mode: host
     ports:
       - 8080:8080
       - 50000:50000
