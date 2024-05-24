@@ -37,7 +37,7 @@ resource "azurerm_public_ip" "public_ip" {
   name                = "vmPublicIP"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
 }
 
 resource "azurerm_network_interface" "nic" {
@@ -107,17 +107,66 @@ resource "azurerm_network_security_group" "nsg" {
   }
 
   security_rule {
-    name                       = "App8080"
+    name                       = "App8080-8090"
     priority                   = 1005
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
-    destination_port_range     = "8080"
+    destination_port_range     = "8080-8090"
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+
+  security_rule {
+    name                       = "K8s10248"
+    priority                   = 1006
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "10248"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "K8s6443"
+    priority                   = 1007
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "6443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "K8s10252"
+    priority                   = 1008
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "10252"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+      name                       = "App9000-9010"
+      priority                   = 1009
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "9000-9010"
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+  }
 }
+
 
 resource "azurerm_subnet_network_security_group_association" "association" {
   subnet_id                 = azurerm_subnet.subnet.id
@@ -133,10 +182,9 @@ resource "azurerm_linux_virtual_machine" "vm" {
     name                  = "vm-ubuntu-jenkins"
     resource_group_name   = azurerm_resource_group.rg.name
     location              = azurerm_resource_group.rg.location
-    size                  = "Standard_B1s" # Free tier eligible
+    size                  = "Standard_B2s" # Free tier eligible
     admin_username        = "adminuser"
     network_interface_ids = [azurerm_network_interface.nic.id]
-    custom_data           = base64encode(file("cloud-config.yml"))
 
     os_disk {
         caching              = "ReadWrite"
@@ -155,4 +203,9 @@ resource "azurerm_linux_virtual_machine" "vm" {
         public_key = tls_private_key.admin_ssh_key.public_key_openssh
     }
 
+}
+
+output "public_ip" {
+  value = azurerm_public_ip.public_ip.ip_address
+  description = "The public IP address of the virtual machine."
 }
